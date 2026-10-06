@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(
+      circle at 15% 10%,
+      rgba(200, 155, 60, 0.06),
+      transparent 28%
+    ),
+    #F0EFE9;
+
+  color: #21262B;
+  font-family: "Inter", sans-serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: rgba(200, 155, 60, 0.25);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* subtle page texture */
+.paper-texture {
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.45) 1px,
+      transparent 1px
+    );
+  background-size: 100% 32px;
+}
+
+/* receipt perforation */
+.perforation {
+  height: 10px;
+
+  background-image:
+    radial-gradient(
+      circle at center,
+      #F0EFE9 3.5px,
+      transparent 3.7px
+    );
+
+  background-size: 16px 10px;
+  background-position: center;
+}
+
+/* custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F0EFE9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C9C5BA;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #AAA59A;
+}
+
+/* hide scrollbar while keeping horizontal scrolling */
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
