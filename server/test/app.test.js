@@ -33,6 +33,49 @@ test("serves health and local expense data without DATABASE_URL", async () => {
   }
 });
 
+test("creates and updates expenses in local mode", async () => {
+  const { server, port } = await startServer();
+
+  try {
+    const createResponse = await fetch(`http://127.0.0.1:${port}/api/expenses`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: 100,
+        category: "Food",
+        expense_date: "2026-10-08",
+        description: "Lunch",
+      }),
+    });
+    const created = await createResponse.json();
+
+    assert.equal(createResponse.status, 201);
+    assert.equal(created.expense.amount, 100);
+    assert.equal(created.expense.category, "Food");
+
+    const updateResponse = await fetch(
+      `http://127.0.0.1:${port}/api/expenses/${created.expense.id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: 150,
+          category: "Food",
+          expense_date: "2026-10-08",
+          description: "Dinner",
+        }),
+      }
+    );
+    const updated = await updateResponse.json();
+
+    assert.equal(updateResponse.status, 200);
+    assert.equal(updated.expense.amount, 150);
+    assert.equal(updated.expense.description, "Dinner");
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
 test("updates an existing budget for the current month in local mode", async () => {
   const { server, port } = await startServer();
 

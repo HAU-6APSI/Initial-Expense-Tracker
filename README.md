@@ -19,25 +19,28 @@ Spendwise is a student expense tracker built with React, Vite, Express, and Post
 
 ## Local development
 
-### Frontend
+Start the frontend and API together from the repository root:
 
 ```bash
 npm install
 npm run dev
 ```
 
-The frontend runs at http://localhost:5173 by default.
+The frontend runs at http://localhost:5173 by default, and its `/api` requests
+are proxied to the local API on port 5000.
 
-### Backend
+For persistent data, configure `server/.env` before starting the app:
 
 ```bash
 cd server
-npm install
 cp .env.example .env
-npm run dev
 ```
 
 Update the copied .env file with the real Supabase direct connection string. Never commit the file or include credentials in screenshots or chat.
+
+When the frontend and API are hosted on different domains, set
+`VITE_API_URL` to the deployed API's base URL ending in `/api` when building
+the frontend.
 
 ## Backend commands
 

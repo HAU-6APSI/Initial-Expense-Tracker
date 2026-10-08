@@ -44,15 +44,6 @@ const localData = {
 const applyLocalExpenseQuery = (sql, values) => {
   const text = sql.trim();
 
-  if (text.includes("WHERE id =")) {
-    const id = Number(values[0]);
-    return {
-      rows: localData.expenses.filter(
-        (item) => item.id === id
-      ),
-    };
-  }
-
   if (text.includes("INSERT INTO expenses")) {
     const [amount, category, expense_date, description] = values;
     const expense = {
@@ -100,6 +91,15 @@ const applyLocalExpenseQuery = (sql, values) => {
     };
   }
 
+  if (text.includes("WHERE id =")) {
+    const id = Number(values[0]);
+    return {
+      rows: localData.expenses.filter(
+        (item) => item.id === id
+      ),
+    };
+  }
+
   return {
     rows: [...localData.expenses].sort(
       (a, b) => new Date(b.expense_date) - new Date(a.expense_date)
@@ -109,15 +109,6 @@ const applyLocalExpenseQuery = (sql, values) => {
 
 const applyLocalBudgetQuery = (sql, values) => {
   const text = sql.trim();
-
-  if (text.includes("WHERE month =")) {
-    const month = values[0];
-    return {
-      rows: localData.budgets.filter(
-        (item) => item.month === month
-      ),
-    };
-  }
 
   if (text.includes("INSERT INTO budgets")) {
     const [amount, month] = values;
@@ -164,6 +155,15 @@ const applyLocalBudgetQuery = (sql, values) => {
     };
   }
 
+  if (text.includes("WHERE month =")) {
+    const month = values[0];
+    return {
+      rows: localData.budgets.filter(
+        (item) => item.month === month
+      ),
+    };
+  }
+
   return {
     rows: [...localData.budgets].sort((a, b) =>
       b.month.localeCompare(a.month)
@@ -178,9 +178,13 @@ const createLocalPool = () => ({
       expenses: applyLocalExpenseQuery,
       budgets: applyLocalBudgetQuery,
     };
-    const table = Object.keys(queryHandlers).find((name) =>
-      text.includes(`FROM ${name}`)
-    );
+    const table = Object.keys(queryHandlers).find((name) => {
+      const tablePattern = new RegExp(
+        `(?:FROM|INTO|UPDATE)\\s+${name}\\b|\\b${name}\\b` ,
+        "i"
+      );
+      return tablePattern.test(text);
+    });
 
     if (!table) {
       throw new Error(`Unsupported local query: ${text}`);
