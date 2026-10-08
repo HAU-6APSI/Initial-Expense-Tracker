@@ -3,16 +3,24 @@ const API_URL =
   "/api";
 
 async function request(endpoint, options = {}) {
-  const response = await fetch(
-    `${API_URL}${endpoint}`,
-    {
+  const url = `${API_URL.replace(/\/+$/, "")}${endpoint}`;
+  let response;
+
+  try {
+    response = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
         ...(options.headers || {}),
       },
       ...options,
-    }
-  );
+    });
+  } catch (error) {
+    const reason =
+      error instanceof Error ? ` ${error.message}` : "";
+    throw new Error(
+      `Unable to reach the API at ${url}.${reason} Start the app with "npm run dev" locally, or check VITE_API_URL for a deployed app.`
+    );
+  }
 
   let data;
 
@@ -20,7 +28,7 @@ async function request(endpoint, options = {}) {
     data = await response.json();
   } catch {
     throw new Error(
-      "The server returned an invalid response."
+      `The API returned a non-JSON response (HTTP ${response.status}, ${response.headers.get("content-type") || "unknown content type"}). Check that VITE_API_URL points to the API server, then restart the app.`
     );
   }
 

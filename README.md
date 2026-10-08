@@ -38,9 +38,23 @@ cp .env.example .env
 
 Update the copied .env file with the real Supabase direct connection string. Never commit the file or include credentials in screenshots or chat.
 
-When the frontend and API are hosted on different domains, set
-`VITE_API_URL` to the deployed API's base URL ending in `/api` when building
-the frontend.
+### Deploying the frontend and API
+
+The Render configuration in `render.yaml` deploys the API only. When the
+frontend is hosted separately, configure these environment variables before
+building/redeploying:
+
+- On the frontend host, set `VITE_API_URL` to the API's public URL ending in
+  `/api` (for example, `https://your-api.example.com/api`). Do not use
+  `localhost` for a deployed frontend.
+- On the API host, set `FRONTEND_URL` to the frontend's public origin only
+  (for example, `https://your-app.example.com`, without a path or trailing
+  slash). This allows the browser's cross-origin API requests.
+- For persistent production data, also set `DATABASE_URL` to the Supabase
+  PostgreSQL connection string and initialize the schema as described below.
+
+After redeploying, verify that `<API URL>/health` and `<API URL>/expenses`
+return JSON.
 
 ## Backend commands
 
