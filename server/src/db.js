@@ -41,119 +41,152 @@ const localData = {
   ],
 };
 
+const applyLocalExpenseQuery = (sql, values) => {
+  const text = sql.trim();
+
+  if (text.includes("WHERE id =")) {
+    const id = Number(values[0]);
+    return {
+      rows: localData.expenses.filter(
+        (item) => item.id === id
+      ),
+    };
+  }
+
+  if (text.includes("INSERT INTO expenses")) {
+    const [amount, category, expense_date, description] = values;
+    const expense = {
+      id: Date.now(),
+      amount: Number(amount),
+      category,
+      expense_date,
+      description: description || null,
+      created_at: new Date().toISOString(),
+    };
+
+    localData.expenses.unshift(expense);
+    return { rows: [expense] };
+  }
+
+  if (text.includes("UPDATE expenses")) {
+    const [amount, category, expense_date, description, id] = values;
+    const index = localData.expenses.findIndex(
+      (item) => item.id === Number(id)
+    );
+
+    if (index === -1) return { rows: [] };
+
+    localData.expenses[index] = {
+      ...localData.expenses[index],
+      amount: Number(amount),
+      category,
+      expense_date,
+      description: description || null,
+    };
+
+    return { rows: [localData.expenses[index]] };
+  }
+
+  if (text.includes("DELETE FROM expenses")) {
+    const id = Number(values[0]);
+    const before = localData.expenses.length;
+
+    localData.expenses = localData.expenses.filter(
+      (item) => item.id !== id
+    );
+
+    return {
+      rows: before === localData.expenses.length ? [] : [{ id }],
+    };
+  }
+
+  return {
+    rows: [...localData.expenses].sort(
+      (a, b) => new Date(b.expense_date) - new Date(a.expense_date)
+    ),
+  };
+};
+
+const applyLocalBudgetQuery = (sql, values) => {
+  const text = sql.trim();
+
+  if (text.includes("WHERE month =")) {
+    const month = values[0];
+    return {
+      rows: localData.budgets.filter(
+        (item) => item.month === month
+      ),
+    };
+  }
+
+  if (text.includes("INSERT INTO budgets")) {
+    const [amount, month] = values;
+    const budget = {
+      id: Date.now(),
+      amount: Number(amount),
+      month,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    localData.budgets.unshift(budget);
+    return { rows: [budget] };
+  }
+
+  if (text.includes("UPDATE budgets")) {
+    const [amount, month, id] = values;
+    const index = localData.budgets.findIndex(
+      (item) => item.id === Number(id)
+    );
+
+    if (index === -1) return { rows: [] };
+
+    localData.budgets[index] = {
+      ...localData.budgets[index],
+      amount: Number(amount),
+      month,
+      updated_at: new Date().toISOString(),
+    };
+
+    return { rows: [localData.budgets[index]] };
+  }
+
+  if (text.includes("DELETE FROM budgets")) {
+    const id = Number(values[0]);
+    const before = localData.budgets.length;
+
+    localData.budgets = localData.budgets.filter(
+      (item) => item.id !== id
+    );
+
+    return {
+      rows: before === localData.budgets.length ? [] : [{ id }],
+    };
+  }
+
+  return {
+    rows: [...localData.budgets].sort((a, b) =>
+      b.month.localeCompare(a.month)
+    ),
+  };
+};
+
 const createLocalPool = () => ({
   async query(sql, values = []) {
     const text = sql.trim();
+    const queryHandlers = {
+      expenses: applyLocalExpenseQuery,
+      budgets: applyLocalBudgetQuery,
+    };
+    const table = Object.keys(queryHandlers).find((name) =>
+      text.includes(`FROM ${name}`)
+    );
 
-    if (text.includes("FROM expenses")) {
-      if (text.includes("WHERE id =")) {
-        const id = Number(values[0]);
-        return { rows: localData.expenses.filter((item) => item.id === id) };
-      }
-
-      return {
-        rows: [...localData.expenses].sort(
-          (a, b) => new Date(b.expense_date) - new Date(a.expense_date)
-        ),
-      };
+    if (!table) {
+      throw new Error(`Unsupported local query: ${text}`);
     }
 
-    if (text.includes("INSERT INTO expenses")) {
-      const [amount, category, expense_date, description] = values;
-      const expense = {
-        id: Date.now(),
-        amount: Number(amount),
-        category,
-        expense_date,
-        description: description || null,
-        created_at: new Date().toISOString(),
-      };
-      localData.expenses.unshift(expense);
-      return { rows: [expense] };
-    }
-
-    if (text.includes("UPDATE expenses")) {
-      const [amount, category, expense_date, description, id] = values;
-      const index = localData.expenses.findIndex(
-        (item) => item.id === Number(id)
-      );
-
-      if (index === -1) return { rows: [] };
-
-      localData.expenses[index] = {
-        ...localData.expenses[index],
-        amount: Number(amount),
-        category,
-        expense_date,
-        description: description || null,
-      };
-      return { rows: [localData.expenses[index]] };
-    }
-
-    if (text.includes("DELETE FROM expenses")) {
-      const id = Number(values[0]);
-      const before = localData.expenses.length;
-      localData.expenses = localData.expenses.filter(
-        (item) => item.id !== id
-      );
-      return { rows: before === localData.expenses.length ? [] : [{ id }] };
-    }
-
-    if (text.includes("FROM budgets")) {
-      if (text.includes("WHERE month =")) {
-        const month = values[0];
-        return {
-          rows: localData.budgets.filter((item) => item.month === month),
-        };
-      }
-
-      return {
-        rows: [...localData.budgets].sort((a, b) =>
-          b.month.localeCompare(a.month)
-        ),
-      };
-    }
-
-    if (text.includes("INSERT INTO budgets")) {
-      const [amount, month] = values;
-      const budget = {
-        id: Date.now(),
-        amount: Number(amount),
-        month,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      localData.budgets.unshift(budget);
-      return { rows: [budget] };
-    }
-
-    if (text.includes("UPDATE budgets")) {
-      const [amount, month, id] = values;
-      const index = localData.budgets.findIndex(
-        (item) => item.id === Number(id)
-      );
-
-      if (index === -1) return { rows: [] };
-
-      localData.budgets[index] = {
-        ...localData.budgets[index],
-        amount: Number(amount),
-        month,
-        updated_at: new Date().toISOString(),
-      };
-      return { rows: [localData.budgets[index]] };
-    }
-
-    if (text.includes("DELETE FROM budgets")) {
-      const id = Number(values[0]);
-      const before = localData.budgets.length;
-      localData.budgets = localData.budgets.filter(
-        (item) => item.id !== id
-      );
-      return { rows: before === localData.budgets.length ? [] : [{ id }] };
-    }
-
-    throw new Error(`Unsupported local query: ${text}`);
+    return queryHandlers[table](text, values);
   },
 });
 

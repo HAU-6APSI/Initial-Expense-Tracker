@@ -31,7 +31,7 @@ export default function Reports() {
       }
     };
 
-    loadExpenses();
+    void loadExpenses();
   }, []);
 
   const { total, categoryTotals, highestCategory } = useMemo(

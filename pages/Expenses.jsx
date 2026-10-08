@@ -481,32 +481,46 @@ export default function Expenses() {
           </p>
         </div>
       ) : (
-        filteredExpenses.length === 0 ? (
-          <EmptyExpenses
-            expenses={expenses}
-            onAdd={openAdd}
-          />
-        ) : (
-          /* EXPENSE LIST */
-
-          <div className="bg-white border border-line rounded-2xl shadow-card overflow-hidden">
-            <div className="perforation" />
-
-            <div className="px-5 sm:px-6 divide-y divide-line/70">
-              {filteredExpenses.map(
-                (expense) => (
-                  <ExpenseRow
-                    key={expense.id}
-                    expense={expense}
-                    onEdit={openEdit}
-                    onDelete={handleDelete}
-                  />
-                )
-              )}
-            </div>
-          </div>
-        )
+        <ExpensesList
+          expenses={filteredExpenses}
+          onEdit={openEdit}
+          onDelete={handleDelete}
+          onAdd={openAdd}
+        />
       )}
     </main>
+  );
+}
+
+function ExpensesList({
+  expenses,
+  onEdit,
+  onDelete,
+  onAdd,
+}) {
+  if (expenses.length === 0) {
+    return (
+      <EmptyExpenses
+        expenses={expenses}
+        onAdd={onAdd}
+      />
+    );
+  }
+
+  return (
+    <div className="bg-white border border-line rounded-2xl shadow-card overflow-hidden">
+      <div className="perforation" />
+
+      <div className="px-5 sm:px-6 divide-y divide-line/70">
+        {expenses.map((expense) => (
+          <ExpenseRow
+            key={expense.id}
+            expense={expense}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        ))}
+      </div>
+    </div>
   );
 }

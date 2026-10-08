@@ -29,6 +29,37 @@ const getCategoryColor = (category) => {
   return "bg-catOther";
 };
 
+const normalizeExpenses = (expenseData) =>
+  (expenseData.expenses || []).map((expense) => ({
+    id: expense.id,
+    amount: Number(expense.amount),
+    category: expense.category,
+    description: expense.description || "",
+    rawDate: expense.expense_date,
+    date: formatDate(expense.expense_date),
+  }));
+
+const getCurrentBudget = (budgetData) => {
+  const currentMonth = new Date()
+    .toISOString()
+    .slice(0, 7);
+
+  const currentBudget = (budgetData.budgets || []).find(
+    (item) => item.month === currentMonth
+  );
+
+  return currentBudget
+    ? Number(currentBudget.amount)
+    : DEFAULT_BUDGET;
+};
+
+const handleDashboardError = (err, setError) => {
+  console.error("Failed to load dashboard:", err);
+  setError(
+    err.message || "Unable to load dashboard data."
+  );
+};
+
 function formatDate(date) {
   if (!date) return "";
 
@@ -64,61 +95,16 @@ export default function Dashboard() {
             getBudgets(),
           ]);
 
-        const normalizedExpenses =
-          (expenseData.expenses || []).map(
-            (expense) => ({
-              id: expense.id,
-              amount: Number(expense.amount),
-              category: expense.category,
-              description:
-                expense.description || "",
-              rawDate: expense.expense_date,
-              date: formatDate(
-                expense.expense_date
-              ),
-            })
-          );
-
-        setExpenses(normalizedExpenses);
-
-        /*
-         * Get the budget for the current month.
-         * The backend stores months as YYYY-MM.
-         */
-        const currentMonth =
-          new Date()
-            .toISOString()
-            .slice(0, 7);
-
-        const currentBudget =
-          (budgetData.budgets || []).find(
-            (item) =>
-              item.month === currentMonth
-          );
-
-        if (currentBudget) {
-          setBudget(
-            Number(currentBudget.amount)
-          );
-        } else {
-          setBudget(DEFAULT_BUDGET);
-        }
+        setExpenses(normalizeExpenses(expenseData));
+        setBudget(getCurrentBudget(budgetData));
       } catch (err) {
-        console.error(
-          "Failed to load dashboard:",
-          err
-        );
-
-        setError(
-          err.message ||
-            "Unable to load dashboard data."
-        );
+        handleDashboardError(err, setError);
       } finally {
         setLoading(false);
       }
     };
 
-    loadDashboard();
+    void loadDashboard();
   }, []);
 
   const totalSpent = useMemo(() => {
@@ -140,13 +126,10 @@ export default function Dashboard() {
     const totals = {};
 
     expenses.forEach((expense) => {
-      if (!totals[expense.category]) {
-        totals[expense.category] = 0;
-      }
-
-      totals[expense.category] += Number(
-        expense.amount
-      );
+      const category = expense.category;
+      totals[category] =
+        (totals[category] || 0) +
+        Number(expense.amount);
     });
 
     return Object.entries(totals)
@@ -158,12 +141,10 @@ export default function Dashboard() {
   }, [expenses]);
 
   const topCategory =
-    categoryTotals.length > 0
-      ? categoryTotals[0]
-      : {
-          category: "None",
-          amount: 0,
-        };
+    categoryTotals[0] || {
+      category: "None",
+      amount: 0,
+    };
 
   const recentExpenses = expenses.slice(0, 3);
 

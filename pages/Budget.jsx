@@ -144,7 +144,7 @@ export default function Budget() {
   };
 
   useEffect(() => {
-    loadBudgetData();
+    void loadBudgetData();
   }, []);
 
   const totalSpent = useMemo(() => {
@@ -206,6 +206,10 @@ export default function Budget() {
       expenses,
       budgetAmount,
     ]);
+
+  const saveButtonLabel = budgetRecord
+    ? "Update budget"
+    : "Save budget";
 
   const handleSaveBudget = async (
     e
@@ -438,11 +442,7 @@ export default function Budget() {
                   <Save size={16} />
                 )}
 
-                {saving
-                  ? "Saving..."
-                  : budgetRecord
-                  ? "Update budget"
-                  : "Save budget"}
+                {saving ? "Saving..." : saveButtonLabel}
 
               </button>
 

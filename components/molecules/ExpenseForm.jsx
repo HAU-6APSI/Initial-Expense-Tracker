@@ -58,9 +58,10 @@ export default function ExpenseForm({
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className={labelClass}>Amount</label>
+          <label htmlFor="expense-amount" className={labelClass}>Amount</label>
 
           <input
+            id="expense-amount"
             type="number"
             min="0.01"
             step="0.01"
@@ -73,9 +74,10 @@ export default function ExpenseForm({
         </div>
 
         <div>
-          <label className={labelClass}>Category</label>
+          <label htmlFor="expense-category" className={labelClass}>Category</label>
 
           <select
+            id="expense-category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className={inputClass}
@@ -91,9 +93,10 @@ export default function ExpenseForm({
       </div>
 
       <div className="mb-4">
-        <label className={labelClass}>Date</label>
+        <label htmlFor="expense-date" className={labelClass}>Date</label>
 
         <input
+          id="expense-date"
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
@@ -103,9 +106,10 @@ export default function ExpenseForm({
       </div>
 
       <div className="mb-5">
-        <label className={labelClass}>Description</label>
+        <label htmlFor="expense-description" className={labelClass}>Description</label>
 
         <input
+          id="expense-description"
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
