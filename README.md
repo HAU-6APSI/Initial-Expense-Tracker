@@ -56,6 +56,15 @@ building/redeploying:
 After redeploying, verify that `<API URL>/health` and `<API URL>/expenses`
 return JSON.
 
+#### Vercel-only deployment
+
+If you deploy only the frontend to Vercel without an absolute `VITE_API_URL`,
+the production app stores expenses and budgets in that browser's local storage.
+This requires no separate API service, but data is limited to that browser and
+device and is not shared or backed up. Redeploy the Vercel project after pushing
+the code changes. To use shared, persistent data instead, deploy the API and
+database and configure `VITE_API_URL`, `FRONTEND_URL`, and `DATABASE_URL`.
+
 ## Backend commands
 
 ```bash
