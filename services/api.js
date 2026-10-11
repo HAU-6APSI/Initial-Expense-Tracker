@@ -1,14 +1,13 @@
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "/api";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 const hasExternalApiUrl =
   API_URL.startsWith("http://") ||
   API_URL.startsWith("https://");
 
+// Use localStorage in production unless an external API
+// URL has explicitly been configured.
 export const isBrowserStorageMode =
-  import.meta.env.PROD &&
-  !hasExternalApiUrl;
+  import.meta.env.PROD && !hasExternalApiUrl;
 
 const STORAGE_KEY = "spendwise-data-v1";
 
