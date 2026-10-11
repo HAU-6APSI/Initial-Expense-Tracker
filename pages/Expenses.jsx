@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import {
   Plus,
@@ -85,6 +86,8 @@ function EmptyExpenses({ expenses, onAdd }) {
 }
 
 export default function Expenses() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [expenses, setExpenses] = useState([]);
 
   const [showForm, setShowForm] = useState(false);
@@ -132,6 +135,26 @@ export default function Expenses() {
   useEffect(() => {
     void loadExpenses();
   }, []);
+
+  useEffect(() => {
+    const editExpenseId = location.state?.editExpenseId;
+    if (editExpenseId == null || loading) return;
+
+    if (!error) {
+      const expenseToEdit = expenses.find(
+        (expense) => String(expense.id) === String(editExpenseId)
+      );
+
+      if (expenseToEdit) {
+        setEditingExpense(expenseToEdit);
+        setShowForm(true);
+      } else {
+        setError("That expense could not be found.");
+      }
+    }
+
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate, loading, error, expenses]);
 
   // ==========================
   // ADD EXPENSE

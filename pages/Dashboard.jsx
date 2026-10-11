@@ -16,6 +16,7 @@ import Button from "../components/atoms/Button";
 import {
   getExpenses,
   getBudgets,
+  deleteExpense,
 } from "../services/api";
 
 const DEFAULT_BUDGET = 4000;
@@ -82,6 +83,31 @@ export default function Dashboard() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const handleEditExpense = (expense) => {
+    navigate("/expenses", {
+      state: { editExpenseId: expense.id },
+    });
+  };
+
+  const handleDeleteExpense = async (expense) => {
+    const confirmed = window.confirm(
+      `Delete "${expense.description || "this expense"}"?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setError("");
+      await deleteExpense(expense.id);
+      setExpenses((current) =>
+        current.filter((item) => item.id !== expense.id)
+      );
+    } catch (err) {
+      console.error("Failed to delete expense:", err);
+      setError(err.message || "Unable to delete the expense.");
+    }
+  };
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -466,6 +492,8 @@ export default function Dashboard() {
                       <ExpenseRow
                         key={expense.id}
                         expense={expense}
+                        onEdit={handleEditExpense}
+                        onDelete={handleDeleteExpense}
                       />
                     )
                   )}
